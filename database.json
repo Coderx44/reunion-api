@@ -1,0 +1,9 @@
+{
+    "dev": {
+      "driver": "pg",
+      "user": "postgres",
+      "password": "dbqwer",
+      "host": "localhost",
+      "database": "reunion"
+    }
+  }
