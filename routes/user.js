@@ -108,7 +108,9 @@ router.post('/follow/:id', authenticate, async (req, res) => {
 router.post('/unfollow/:id', authenticate, async (req, res) => {
     const userId = req.user.id;
     const idToUnfollow = req.params.id;
-
+    if (userId == idToUnfollow){
+        return res.status(400).json({error:"You cannot unfollow yourself."});
+    }
     // Check if the authenticated user follows the user with `idToUnfollow`
     const followingQuery = {
         text: 'SELECT * FROM following WHERE follower_id=$1 AND following_id=$2',
