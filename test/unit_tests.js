@@ -2,7 +2,8 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const expect = chai.expect;
 const app = require('../index');
-
+const sinon = require('sinon');
+const db = require('../db')
 chai.use(chaiHttp);
 
 describe('GET /api/user', () => {
@@ -85,4 +86,67 @@ describe('POST /api/authenticate', () => {
     expect(res.body).to.have.property('error', 'Invalid email or password');
   });
 });
+
+
+describe('POST /follow/:id', () => {
+  let dbStub;
+  beforeEach(() => {
+    dbStub = sinon.stub(db, 'query');
+  });
+  afterEach(() => {
+    dbStub.restore();
+  });
+
+  it('should return an error if user tries to follow themself', async () => {
+    const user = {
+      id: 1,
+      email: 'johndoe@example.com'
+    };
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNjc5MjA2NTExfQ.TrpQCK5W1jWQbx5G9kYC4qrH7nxGL1wto-Ugz-obIiI';
+    const followerId = 1;
+    const followingId = 1;
+
+    dbStub.withArgs('SELECT * FROM users WHERE id = $1', [followerId]).resolves({
+      rows: [{ id: followerId, email: user.email }]
+    });
+    dbStub.withArgs('SELECT * FROM users WHERE id = $1', [followingId]).resolves({
+      rows: [{ id: followingId }]
+    });
+
+    const res = await chai
+      .request(app)
+      .post(`/api/follow/${followingId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send();
+
+    expect(res).to.have.status(400);
+    expect(res.body).to.have.property('error').to.equal('You cannot follow yourself.');
+  });
+
+
+
+  it('should return an error if user is already following the target user', async () => {
+    const user = {
+      id: 1,
+      email: 'test@example.com'
+    };
+    const token = 'test-token';
+    const followerId = 1;
+    const followingId = 2;
+
+    dbStub.withArgs('SELECT * FROM users WHERE id = $1', [followerId]).resolves({
+      rows: [{ id: followerId, email: user.email }]
+    });
+    dbStub.withArgs('SELECT * FROM users WHERE id = $1', [followingId]).resolves({
+      rows: [{ id: followingId }]
+    });
+    dbStub.withArgs('SELECT * FROM following WHERE follower_id = $1 AND following_id = $2', [
+      followerId,
+      followingId
+    ]).resolves({
+      rows: [{ id: 1 }]
+    });
+  });
+});
+
 
