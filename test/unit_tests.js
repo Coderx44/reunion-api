@@ -150,3 +150,88 @@ describe('POST /follow/:id', () => {
 });
 
 
+
+describe('GET /api/posts/:id', () => {
+  let authenticatedUser = chai.request.agent(app);
+  let token;
+
+  before((done) => {
+    // Login and get token for authentication
+    authenticatedUser
+      .post('/api/authenticate')
+      .send({ email: 'johndoe@example.com', password: 'password1' })
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        token = res.body.token;
+        done();
+      });
+  });
+
+  it('should return a post with likes and comments count', (done) => {
+    authenticatedUser
+      .get('/api/posts/1')
+      .set('Authorization', `Bearer ${token}`)
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        expect(res.body).to.have.property('id');
+        expect(res.body).to.have.property('title');
+        expect(res.body).to.have.property('description');
+        expect(res.body).to.have.property('created_at');
+        expect(res.body).to.have.property('likes');
+        expect(res.body).to.have.property('comments');
+        done();
+      });
+  });
+
+
+
+  it('should return 404 if post is not found', (done) => {
+    authenticatedUser
+      .get('/api/posts/999')
+      .set('Authorization', `Bearer ${token}`)
+      .end((err, res) => {
+        expect(res).to.have.status(404);
+        done();
+      });
+  });
+});
+
+describe('GET /all_posts', () => {
+  let authenticatedUser = chai.request.agent(app);
+  let token;
+
+  before((done) => {
+    // Login and get token for authentication
+    authenticatedUser
+      .post('/api/authenticate')
+      .send({ email: 'johndoe@example.com', password: 'password1' })
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        token = res.body.token;
+        done();
+      });
+  });
+
+  it('should return all posts for authenticated user', (done) => {
+    authenticatedUser
+      .get('/api/all_posts')
+      .set('Authorization', `Bearer ${token}`)
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('array');
+        done();
+      });
+  });
+
+
+  it('should return 403 if token is invalid', (done) => {
+    chai.request(app)
+      .get('/api/all_posts')
+      .set('Authorization', 'Bearer invalidtoken')
+      .end((err, res) => {
+        expect(res).to.have.status(403);
+        done();
+      });
+  });
+});
+
