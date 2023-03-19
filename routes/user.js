@@ -63,7 +63,9 @@ router.post('/follow/:id', authenticate, async (req, res) => {
         const { id } = req.params;
         const followerEmail = req.user.email;
         const following = await db.query('SELECT * FROM users WHERE id = $1', [id]);
-
+        if (req.user.id == id){
+            return res.status(400).json({error:"You cannot follow yourself."})
+        }
         if (following.rows.length === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
