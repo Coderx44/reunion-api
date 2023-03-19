@@ -1,9 +1,10 @@
 {
     "dev": {
       "driver": "pg",
-      "user": "postgres",
-      "password": "dbqwer",
-      "host": "localhost",
-      "database": "reunion"
+      "user": "reunion_6qcf_user",
+      "password": "zz9WiePMpDUKxGxo7pA2rWMnpZFGt4mi",
+      "host": "dpg-cgb0vo02qv267ueii9hg-a",
+      "database": "reunion_6qcf"
     }
   }
+
