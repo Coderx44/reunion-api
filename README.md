@@ -11,3 +11,5 @@ DUMMY USERS:
 Render link:
 https://social-media-api-coderx44.onrender.com
 
+Note:
+Use Bearer Token for authentication.
